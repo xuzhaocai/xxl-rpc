@@ -135,20 +135,22 @@ public class XxlRpcReferenceBean {
 	// ---------------------- util ----------------------
 
 	public Object getObject() {
+
+		// 动态代理
 		return Proxy.newProxyInstance(Thread.currentThread()
 				.getContextClassLoader(), new Class[] { iface },
 				new InvocationHandler() {
 					@Override
 					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
-						// method param
-						String className = method.getDeclaringClass().getName();	// iface.getName()
+						// method param  请求参数
+						String className = method.getDeclaringClass().getName();	// iface.getName()   接口
 						String varsion_ = version;
-						String methodName = method.getName();
-						Class<?>[] parameterTypes = method.getParameterTypes();
-						Object[] parameters = args;
+						String methodName = method.getName(); // 方法名
+						Class<?>[] parameterTypes = method.getParameterTypes();  // 方法参数类型
+						Object[] parameters = args;//方法参数
 
-						// filter for generic
+						// filter for generic  泛化调用参数封装
 						if (className.equals(XxlRpcGenericService.class.getName()) && methodName.equals("invoke")) {
 
 							Class<?>[] paramTypes = null;
@@ -175,7 +177,7 @@ public class XxlRpcReferenceBean {
 							throw new XxlRpcException("xxl-rpc proxy class-method not support");
 						}
 
-						// address
+						// address   软负载
 						String finalAddress = address;
 						if (finalAddress==null || finalAddress.trim().length()==0) {
 							if (invokerFactory!=null && invokerFactory.getServiceRegistry()!=null) {
@@ -185,9 +187,9 @@ public class XxlRpcReferenceBean {
 								// load balance
 								if (addressSet==null || addressSet.size()==0) {
 									// pass
-								} else if (addressSet.size()==1) {
+								} else if (addressSet.size()==1) {  // 地址一个的时候就用这一个
 									finalAddress = addressSet.first();
-								} else {
+								} else { // 软负载策略
 									finalAddress = loadBalance.xxlRpcInvokerRouter.route(serviceKey, addressSet);
 								}
 
@@ -197,7 +199,7 @@ public class XxlRpcReferenceBean {
 							throw new XxlRpcException("xxl-rpc reference bean["+ className +"] address empty");
 						}
 
-						// request
+						// request   请求参数封装
 						XxlRpcRequest xxlRpcRequest = new XxlRpcRequest();
 	                    xxlRpcRequest.setRequestId(UUID.randomUUID().toString());
 	                    xxlRpcRequest.setCreateMillisTime(System.currentTimeMillis());
@@ -207,7 +209,7 @@ public class XxlRpcReferenceBean {
 	                    xxlRpcRequest.setParameterTypes(parameterTypes);
 	                    xxlRpcRequest.setParameters(parameters);
 	                    
-	                    // send
+	                    // send   请求方式
 						if (CallType.SYNC == callType) {
 							// future-response set
 							XxlRpcFutureResponse futureResponse = new XxlRpcFutureResponse(invokerFactory, xxlRpcRequest, null);
