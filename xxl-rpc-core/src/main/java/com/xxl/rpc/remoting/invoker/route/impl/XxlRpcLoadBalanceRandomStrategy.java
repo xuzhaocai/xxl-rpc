@@ -16,10 +16,10 @@ public class XxlRpcLoadBalanceRandomStrategy extends XxlRpcLoadBalance {
 
     @Override
     public String route(String serviceKey, TreeSet<String> addressSet) {
-        // arr
+        // 转成 array
         String[] addressArr = addressSet.toArray(new String[addressSet.size()]);
 
-        // random
+        // random  取随机位置
         String finalAddress = addressArr[random.nextInt(addressSet.size())];
         return finalAddress;
     }

@@ -32,7 +32,7 @@ public class XxlRpcLoadBalanceRoundStrategy extends XxlRpcLoadBalance {
 
     @Override
     public String route(String serviceKey, TreeSet<String> addressSet) {
-        // arr
+        // arr  转成 array
         String[] addressArr = addressSet.toArray(new String[addressSet.size()]);
 
         // round
@@ -40,4 +40,20 @@ public class XxlRpcLoadBalanceRoundStrategy extends XxlRpcLoadBalance {
         return finalAddress;
     }
 
+    public static void main(String[] args) {
+        XxlRpcLoadBalanceRoundStrategy   xxlRpcLoadBalanceRoundStrategy = new XxlRpcLoadBalanceRoundStrategy();
+        TreeSet<String> set= new TreeSet<>();
+        set.add("192.168.7.144:8081");
+        set.add("192.168.7.144:8082");
+        set.add("192.168.7.144:8083");
+        set.add("192.168.7.144:8084");
+        set.add("192.168.7.144:8085");
+        set.add("192.168.7.144:8086");
+
+        while (true) {
+            System.out.println( xxlRpcLoadBalanceRoundStrategy.route("testKey", set));
+        }
+
+
+    }
 }
