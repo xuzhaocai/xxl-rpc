@@ -60,18 +60,22 @@ public class XxlRpcLoadBalanceConsistentHashStrategy extends XxlRpcLoadBalance {
         // ------A1------A2-------A3------
         // -----------J1------------------
         TreeMap<Long, String> addressRing = new TreeMap<Long, String>();
-        for (String address: addressSet) {
+        for (String address: addressSet) {//  添加虚拟的节点 ，防止 节点少的时候发生故障，然后造成雪崩事故。
             for (int i = 0; i < VIRTUAL_NODE_NUM; i++) {
                 long addressHash = hash("SHARD-" + address + "-NODE-" + i);
                 addressRing.put(addressHash, address);
             }
         }
-
+        // 获得serviceKey的hash值
         long jobHash = hash(serviceKey);
+        // tailMap 方法就是获取 key 大于 参数的所有值
         SortedMap<Long, String> lastRing = addressRing.tailMap(jobHash);
         if (!lastRing.isEmpty()) {
+            // 找到了就取lastRing 挨着 它最近的那个， 也就是第一个  ，正好符合一致性hash 顺时针取挨着最近的要求的 要求
             return lastRing.get(lastRing.firstKey());
         }
+
+        // 没有获取到，说明这个hash值是最大的了，后面没有了 ，就取最小的那个。也就是整个hash 环最小的那个
         return addressRing.firstEntry().getValue();
     }
 

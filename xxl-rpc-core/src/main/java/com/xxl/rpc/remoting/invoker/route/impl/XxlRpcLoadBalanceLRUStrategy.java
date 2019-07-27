@@ -12,13 +12,13 @@ import java.util.concurrent.ConcurrentMap;
  * @author xuxueli 2018-12-04
  */
 public class XxlRpcLoadBalanceLRUStrategy extends XxlRpcLoadBalance {
-
+    //  存储 serviceKey 与 address
     private ConcurrentMap<String, LinkedHashMap<String, String>> jobLRUMap = new ConcurrentHashMap<String, LinkedHashMap<String, String>>();
     private long CACHE_VALID_TIME = 0;
 
     public String doRoute(String serviceKey, TreeSet<String> addressSet) {
 
-        // cache clear
+        // cache clear 过段时间清空 map
         if (System.currentTimeMillis() > CACHE_VALID_TIME) {
             jobLRUMap.clear();
             CACHE_VALID_TIME = System.currentTimeMillis() + 1000*60*60*24;
@@ -26,7 +26,7 @@ public class XxlRpcLoadBalanceLRUStrategy extends XxlRpcLoadBalance {
 
         // init lru
         LinkedHashMap<String, String> lruItem = jobLRUMap.get(serviceKey);
-        if (lruItem == null) {
+        if (lruItem == null) {  /// 初始化
             /**
              * LinkedHashMap
              *      a、accessOrder：ture=访问顺序排序（get/put时排序）/ACCESS-LAST；false=插入顺序排期/FIFO；
@@ -35,7 +35,7 @@ public class XxlRpcLoadBalanceLRUStrategy extends XxlRpcLoadBalance {
             lruItem = new LinkedHashMap<String, String>(16, 0.75f, true){
                 @Override
                 protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
-                    if(super.size() > 1000){
+                    if(super.size() > 1000){   // size 超过1000
                         return true;
                     }else{
                         return false;
@@ -46,18 +46,20 @@ public class XxlRpcLoadBalanceLRUStrategy extends XxlRpcLoadBalance {
         }
 
         // put new
-        for (String address: addressSet) {
+        for (String address: addressSet) {  // 添加新的
             if (!lruItem.containsKey(address)) {
                 lruItem.put(address, address);
             }
         }
-        // remove old
+        // remove old 将不存在记录
         List<String> delKeys = new ArrayList<>();
         for (String existKey: lruItem.keySet()) {
             if (!addressSet.contains(existKey)) {
                 delKeys.add(existKey);
             }
         }
+
+        //  移除不存在的
         if (delKeys.size() > 0) {
             for (String delKey: delKeys) {
                 lruItem.remove(delKey);

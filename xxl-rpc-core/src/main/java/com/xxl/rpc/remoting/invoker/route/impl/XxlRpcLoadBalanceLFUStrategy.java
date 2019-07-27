@@ -12,13 +12,13 @@ import java.util.concurrent.ConcurrentMap;
  * @author xuxueli 2018-12-04
  */
 public class XxlRpcLoadBalanceLFUStrategy extends XxlRpcLoadBalance {
-
+    //  key ： 服务key   value： 机器：使用次数
     private ConcurrentMap<String, HashMap<String, Integer>> jobLfuMap = new ConcurrentHashMap<String, HashMap<String, Integer>>();
     private long CACHE_VALID_TIME = 0;
 
     public String doRoute(String serviceKey, TreeSet<String> addressSet) {
 
-        // cache clear
+        // cache clear  过段时间就清空
         if (System.currentTimeMillis() > CACHE_VALID_TIME) {
             jobLfuMap.clear();
             CACHE_VALID_TIME = System.currentTimeMillis() + 1000*60*60*24;
@@ -33,12 +33,14 @@ public class XxlRpcLoadBalanceLFUStrategy extends XxlRpcLoadBalance {
 
         // put new
         for (String address: addressSet) {
+
+            // 之前没有过 或者是调用次数 大于1000000 就进行初始化
             if (!lfuItemMap.containsKey(address) || lfuItemMap.get(address) >1000000 ) {
                 lfuItemMap.put(address, 0);
             }
         }
 
-        // remove old
+        // remove old   移除那种不存在的
         List<String> delKeys = new ArrayList<>();
         for (String existKey: lfuItemMap.keySet()) {
             if (!addressSet.contains(existKey)) {
@@ -51,9 +53,9 @@ public class XxlRpcLoadBalanceLFUStrategy extends XxlRpcLoadBalance {
             }
         }
 
-        // load least userd count address
+        // load least userd count address   按照次数进行排序
         List<Map.Entry<String, Integer>> lfuItemList = new ArrayList<Map.Entry<String, Integer>>(lfuItemMap.entrySet());
-        Collections.sort(lfuItemList, new Comparator<Map.Entry<String, Integer>>() {
+        Collections.sort(lfuItemList, new Comparator<Map.Entry<String, Integer>>() {  // 根据次数 从小到大排序
             @Override
             public int compare(Map.Entry<String, Integer> o1, Map.Entry<String, Integer> o2) {
                 return o1.getValue().compareTo(o2.getValue());
@@ -72,5 +74,4 @@ public class XxlRpcLoadBalanceLFUStrategy extends XxlRpcLoadBalance {
         String finalAddress = doRoute(serviceKey, addressSet);
         return finalAddress;
     }
-
 }

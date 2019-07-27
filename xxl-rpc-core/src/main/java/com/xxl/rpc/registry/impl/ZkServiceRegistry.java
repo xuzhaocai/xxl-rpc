@@ -77,6 +77,8 @@ public class ZkServiceRegistry extends ServiceRegistry {
      */
     @Override
     public void start(Map<String, String> param) {
+
+        // 需要的参数， zk的地址
         String zkaddress = param.get(ZK_ADDRESS);
         String zkdigest = param.get(ZK_DIGEST);
         String env = param.get(ENV);
@@ -90,10 +92,10 @@ public class ZkServiceRegistry extends ServiceRegistry {
         if (env==null || env.trim().length()==0) {
             throw new XxlRpcException("xxl-rpc env can not be empty");
         }
-
+        // 拼接
         zkEnvPath = zkBasePath.concat("/").concat(env);
 
-        // init
+        // init 创建zk 客户端
         xxlZkClient = new XxlZkClient(zkaddress, zkEnvPath, zkdigest, new Watcher() {
             @Override
             public void process(WatchedEvent watchedEvent) {
