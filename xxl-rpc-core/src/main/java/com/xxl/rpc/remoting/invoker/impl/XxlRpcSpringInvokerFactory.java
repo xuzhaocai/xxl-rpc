@@ -65,16 +65,16 @@ public class XxlRpcSpringInvokerFactory extends InstantiationAwareBeanPostProces
         ReflectionUtils.doWithFields(bean.getClass(), new ReflectionUtils.FieldCallback() {
             @Override
             public void doWith(Field field) throws IllegalArgumentException, IllegalAccessException {
-                if (field.isAnnotationPresent(XxlRpcReference.class)) {
+                if (field.isAnnotationPresent(XxlRpcReference.class)) {  // 找出带XxlRpcReference  注解的 成员
                     // valid
                     Class iface = field.getType();
-                    if (!iface.isInterface()) {
+                    if (!iface.isInterface()) {  // 不是接口类型就异常
                         throw new XxlRpcException("xxl-rpc, reference(XxlRpcReference) must be interface.");
                     }
-
+                    // 获取注解信息
                     XxlRpcReference rpcReference = field.getAnnotation(XxlRpcReference.class);
 
-                    // init reference bean
+                    // init reference bean   创建 bean
                     XxlRpcReferenceBean referenceBean = new XxlRpcReferenceBean(
                             rpcReference.netType(),
                             rpcReference.serializer().getSerializer(),
@@ -88,17 +88,19 @@ public class XxlRpcSpringInvokerFactory extends InstantiationAwareBeanPostProces
                             null,
                             xxlRpcInvokerFactory
                     );
-
+                    // 获取代理
                     Object serviceProxy = referenceBean.getObject();
 
                     // set bean
                     field.setAccessible(true);
+
+                    // 将代理值设置进去
                     field.set(bean, serviceProxy);
 
                     logger.info(">>>>>>>>>>> xxl-rpc, invoker factory init reference bean success. serviceKey = {}, bean.field = {}.{}",
                             XxlRpcProviderFactory.makeServiceKey(iface.getName(), rpcReference.version()), beanName, field.getName());
 
-                    // collection
+                    // collection  生成key
                     String serviceKey = XxlRpcProviderFactory.makeServiceKey(iface.getName(), rpcReference.version());
                     serviceKeyList.add(serviceKey);
 
@@ -109,6 +111,7 @@ public class XxlRpcSpringInvokerFactory extends InstantiationAwareBeanPostProces
         // mult discovery
         if (xxlRpcInvokerFactory.getServiceRegistry() != null) {
             try {
+                // 进行服务发现
                 xxlRpcInvokerFactory.getServiceRegistry().discovery(serviceKeyList);
             } catch (Exception e) {
                 logger.error(e.getMessage(), e);

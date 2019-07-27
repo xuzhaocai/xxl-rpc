@@ -1,11 +1,13 @@
 package com.xxl.rpc.remoting.invoker.route.impl;
 
 import com.xxl.rpc.remoting.invoker.route.XxlRpcLoadBalance;
+import sun.rmi.runtime.Log;
 
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+
 
 /**
  * consustent hash
@@ -13,7 +15,7 @@ import java.util.*;
  * 单个JOB对应的每个执行器，使用频率最低的优先被选举
  *      a(*)、LFU(Least Frequently Used)：最不经常使用，频率/次数
  *      b、LRU(Least Recently Used)：最近最久未使用，时间
- *
+ * 一致性hash
  * @author xuxueli 2018-12-04
  */
 public class XxlRpcLoadBalanceConsistentHashStrategy extends XxlRpcLoadBalance {
@@ -60,22 +62,21 @@ public class XxlRpcLoadBalanceConsistentHashStrategy extends XxlRpcLoadBalance {
         // ------A1------A2-------A3------
         // -----------J1------------------
         TreeMap<Long, String> addressRing = new TreeMap<Long, String>();
-        for (String address: addressSet) {//  添加虚拟的节点 ，防止 节点少的时候发生故障，然后造成雪崩事故。
+        for (String address: addressSet) {  // 虚拟节点
             for (int i = 0; i < VIRTUAL_NODE_NUM; i++) {
                 long addressHash = hash("SHARD-" + address + "-NODE-" + i);
                 addressRing.put(addressHash, address);
             }
         }
-        // 获得serviceKey的hash值
-        long jobHash = hash(serviceKey);
-        // tailMap 方法就是获取 key 大于 参数的所有值
-        SortedMap<Long, String> lastRing = addressRing.tailMap(jobHash);
+
+        long jobHash = hash(serviceKey);  // 计算key 的hash
+        SortedMap<Long, String> lastRing = addressRing.tailMap(jobHash);  // 选取  当前值 后面的 所有节点
         if (!lastRing.isEmpty()) {
-            // 找到了就取lastRing 挨着 它最近的那个， 也就是第一个  ，正好符合一致性hash 顺时针取挨着最近的要求的 要求
+            // 得到最近的一个
             return lastRing.get(lastRing.firstKey());
         }
 
-        // 没有获取到，说明这个hash值是最大的了，后面没有了 ，就取最小的那个。也就是整个hash 环最小的那个
+        // 后面没有了 ， 就选择
         return addressRing.firstEntry().getValue();
     }
 
@@ -83,6 +84,43 @@ public class XxlRpcLoadBalanceConsistentHashStrategy extends XxlRpcLoadBalance {
     public String route(String serviceKey, TreeSet<String> addressSet) {
         String finalAddress = doRoute(serviceKey, addressSet);
         return finalAddress;
+    }
+
+    public static void main(String[] args) {
+        /*XxlRpcLoadBalanceConsistentHashStrategy  xxlRpcLoadBalanceConsistentHashStrategy = new XxlRpcLoadBalanceConsistentHashStrategy();
+        TreeSet<String> set= new TreeSet<>();
+        set.add("192.168.7.144:8081");
+        set.add("192.168.7.144:8082");
+        set.add("192.168.7.144:8083");
+        set.add("192.168.7.144:8084");
+        set.add("192.168.7.144:8085");
+        set.add("192.168.7.144:8086");*/
+
+       /* while (true) {
+            System.out.println( xxlRpcLoadBalanceConsistentHashStrategy.route("testKey", set));
+        }*/
+        TreeMap<Long , String >  treeMap  =new TreeMap<>();
+        treeMap.put(5L,"2");
+        treeMap.put(7L,"2");
+        treeMap.put(1L,"2");
+        treeMap.put(3L,"2");
+        treeMap.put(25L,"2");
+        treeMap.put(9L,"2");
+        treeMap.put(12L,"2");
+       // Set<Map.Entry<Long, String>> entries = treeMap.entrySet();
+
+
+
+
+
+        SortedMap<Long, String> s = treeMap.tailMap(6L);
+
+        Set<Map.Entry<Long, String>> entries = s.entrySet();
+        for (Map.Entry<Long, String>  entry:entries
+                ){
+            System.out.println(entry.getKey()+"--->"+entry.getValue());
+        }
+
     }
 
 }

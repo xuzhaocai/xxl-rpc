@@ -8,13 +8,13 @@ package com.xxl.rpc.remoting.invoker.call;
 public enum CallType {
 
 
-    SYNC,
+    SYNC,// 同步
 
-    FUTURE,
+    FUTURE,  // 异步
 
-    CALLBACK,
+    CALLBACK, // 回调
 
-    ONEWAY;
+    ONEWAY;// 单向调用
 
 
     public static CallType match(String name, CallType defaultCallType){

@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentMap;
 
 /**
  * lru
- *
+ * 最近最少使用
  * @author xuxueli 2018-12-04
  */
 public class XxlRpcLoadBalanceLRUStrategy extends XxlRpcLoadBalance {
@@ -78,4 +78,20 @@ public class XxlRpcLoadBalanceLRUStrategy extends XxlRpcLoadBalance {
         return finalAddress;
     }
 
+    public static void main(String[] args) {
+        XxlRpcLoadBalanceLRUStrategy  xxlRpcLoadBalanceLRUStrategy = new XxlRpcLoadBalanceLRUStrategy();
+        TreeSet<String> set= new TreeSet<>();
+        set.add("192.168.7.144:8081");
+        set.add("192.168.7.144:8082");
+        set.add("192.168.7.144:8083");
+        set.add("192.168.7.144:8084");
+        set.add("192.168.7.144:8085");
+        set.add("192.168.7.144:8086");
+
+        while (true) {
+            System.out.println( xxlRpcLoadBalanceLRUStrategy.route("testKey", set));
+        }
+
+
+    }
 }
