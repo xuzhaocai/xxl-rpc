@@ -50,7 +50,7 @@ public class XxlRpcSpringInvokerFactory extends InstantiationAwareBeanPostProces
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        // start invoker factory
+        // start invoker factory  创建注册中心对象， 配置注册中心
         xxlRpcInvokerFactory = new XxlRpcInvokerFactory(serviceRegistryClass, serviceRegistryParam);
         xxlRpcInvokerFactory.start();
     }
@@ -58,7 +58,7 @@ public class XxlRpcSpringInvokerFactory extends InstantiationAwareBeanPostProces
     @Override
     public boolean postProcessAfterInstantiation(final Object bean, final String beanName) throws BeansException {
 
-        // collection
+        // collection   保存需要提供服务的key
         final Set<String> serviceKeyList = new HashSet<>();
 
         // parse XxlRpcReferenceBean
@@ -102,13 +102,14 @@ public class XxlRpcSpringInvokerFactory extends InstantiationAwareBeanPostProces
 
                     // collection  生成key
                     String serviceKey = XxlRpcProviderFactory.makeServiceKey(iface.getName(), rpcReference.version());
+
                     serviceKeyList.add(serviceKey);
 
                 }
             }
         });
 
-        // mult discovery
+        // mult discovery 进行服务发现
         if (xxlRpcInvokerFactory.getServiceRegistry() != null) {
             try {
                 // 进行服务发现

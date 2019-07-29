@@ -18,12 +18,12 @@ import java.util.TreeSet;
 public abstract class ServiceRegistry {
 
     /**
-     * start
+     *开始
      */
     public abstract void start(Map<String, String> param);
 
     /**
-     * start
+     * 结束
      */
     public abstract void stop();
 

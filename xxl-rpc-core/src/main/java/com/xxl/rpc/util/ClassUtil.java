@@ -20,7 +20,6 @@ public class ClassUtil {
         primClasses.put("double", double.class);
         primClasses.put("void", void.class);
     }
-
     public static Class<?> resolveClass(String className) throws ClassNotFoundException {
         try {
             return Class.forName(className);

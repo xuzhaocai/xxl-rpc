@@ -62,7 +62,7 @@ public class XxlRpcLoadBalanceConsistentHashStrategy extends XxlRpcLoadBalance {
         // ------A1------A2-------A3------
         // -----------J1------------------
         TreeMap<Long, String> addressRing = new TreeMap<Long, String>();
-        for (String address: addressSet) {  // 虚拟节点
+        for (String address: addressSet) {  // 虚拟节点  ， 防止故障后带来的雪崩问题
             for (int i = 0; i < VIRTUAL_NODE_NUM; i++) {
                 long addressHash = hash("SHARD-" + address + "-NODE-" + i);
                 addressRing.put(addressHash, address);
@@ -87,39 +87,25 @@ public class XxlRpcLoadBalanceConsistentHashStrategy extends XxlRpcLoadBalance {
     }
 
     public static void main(String[] args) {
-        /*XxlRpcLoadBalanceConsistentHashStrategy  xxlRpcLoadBalanceConsistentHashStrategy = new XxlRpcLoadBalanceConsistentHashStrategy();
+        XxlRpcLoadBalanceConsistentHashStrategy  xxlRpcLoadBalanceConsistentHashStrategy = new XxlRpcLoadBalanceConsistentHashStrategy();
         TreeSet<String> set= new TreeSet<>();
         set.add("192.168.7.144:8081");
         set.add("192.168.7.144:8082");
         set.add("192.168.7.144:8083");
         set.add("192.168.7.144:8084");
         set.add("192.168.7.144:8085");
-        set.add("192.168.7.144:8086");*/
+        set.add("192.168.7.144:8086");
 
-       /* while (true) {
+        while (true) {
             System.out.println( xxlRpcLoadBalanceConsistentHashStrategy.route("testKey", set));
-        }*/
-        TreeMap<Long , String >  treeMap  =new TreeMap<>();
-        treeMap.put(5L,"2");
-        treeMap.put(7L,"2");
-        treeMap.put(1L,"2");
-        treeMap.put(3L,"2");
-        treeMap.put(25L,"2");
-        treeMap.put(9L,"2");
-        treeMap.put(12L,"2");
-       // Set<Map.Entry<Long, String>> entries = treeMap.entrySet();
-
-
-
-
-
-        SortedMap<Long, String> s = treeMap.tailMap(6L);
-
-        Set<Map.Entry<Long, String>> entries = s.entrySet();
-        for (Map.Entry<Long, String>  entry:entries
-                ){
-            System.out.println(entry.getKey()+"--->"+entry.getValue());
         }
+
+
+
+
+
+
+
 
     }
 
